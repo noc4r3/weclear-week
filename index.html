@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>[hidden]{display:none!important}</style>
+<title>Неделя WeClear NXT</title>
+<meta name="description" content="Недельный дашборд команды: праки, офки, игроки, карты, итог и план">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600&family=Fira+Sans+Condensed:wght@400;500;600&family=Fira+Mono:wght@400;500&display=swap">
+
+</head>
+<body>
+
+<style>
+:root{
+  --ground:#0d0d0d;--surface:#1a1a19;--line:#2c2c2a;--ring:#383835;
+  --ink:#ffffff;--ink-2:#c3c2b7;--muted:#898781;
+  --ct:#3987e5;--t:#d95926;--good:#0ca30c;--crit:#d03b3b;
+  --display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --ui:"Fira Sans Condensed","Roboto Condensed","Arial Narrow",system-ui,sans-serif;
+  --mono:"Fira Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}   /* иначе .gate со своим display перебивает атрибут */
+*{box-sizing:border-box}
+html,body{background:var(--ground)}
+body{margin:0;color:var(--ink);font:15px/1.45 var(--ui);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:0 14px 56px}
+.brand{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;padding:20px 0 10px}
+.brand .team{font:600 22px/1 var(--display);letter-spacing:.03em}
+.brand .sub{color:var(--muted);font-size:14px}
+.sample{margin:0 0 12px;padding:8px 12px;border:1px dashed var(--ring);border-radius:10px;color:var(--ink-2);font-size:13px}
+.filters{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:8px;overflow-x:auto;margin:0 -14px;padding:10px 14px;background:rgba(13,13,13,.96);border-bottom:1px solid var(--line);scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.filters::-webkit-scrollbar{display:none}
+.week,.seg,.sel{flex:none;display:flex;align-items:center}
+.week{gap:4px}
+.week button,.seg button,.sel select{height:36px;font:500 14px var(--ui);color:var(--ink-2);background:var(--surface);border:1px solid var(--ring)}
+.week button{width:36px;border-radius:8px;cursor:pointer}
+.week button:disabled{opacity:.35;cursor:default}
+#wlabel{min-width:106px;text-align:center;font:500 14px var(--mono);color:var(--ink)}
+.seg button{padding:0 12px;cursor:pointer}
+.seg button:first-child{border-radius:8px 0 0 8px}
+.seg button:last-child{border-radius:0 8px 8px 0}
+.seg button+button{margin-left:-1px}
+.seg button[aria-pressed="true"]{position:relative;background:var(--ct);border-color:var(--ct);color:#fff}
+.sel{gap:6px;font-size:12px;color:var(--muted)}
+.sel select{border-radius:8px;padding:0 6px;color:var(--ink)}
+button:focus-visible,select:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.sec{margin-top:32px}
+.sec>h2{margin:0 0 12px;font:600 13px/1 var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.lead{margin:-4px 0 12px;color:var(--muted);font-size:13px;max-width:72ch}
+.subh{margin:20px 0 6px;font:600 15px var(--ui)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.card h3{margin:0 0 10px;font:600 15px var(--ui);display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap}
+.card h3 .muted{font-weight:400;font-size:13px}
+.card p{margin:4px 0;color:var(--ink-2)}
+.card p span{color:var(--muted)}
+.card ul{margin:0;padding-left:18px;color:var(--ink-2)}
+.card .muted,.card p.muted{color:var(--muted)}
+.small{font-size:12px}
+.grid{display:grid;gap:10px}
+.stack{margin-top:10px}
+.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:760px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}.two{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.k{font:600 11px/1.2 var(--ui);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.tile .val{font:500 26px/1.15 var(--mono);margin:6px 0 4px}
+.tile .note{font-size:13px;color:var(--muted)}
+.split{display:flex;gap:2px;height:6px;margin-top:10px}
+.split i{display:block;border-radius:3px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{padding:6px 8px;border-bottom:1px solid var(--ring);font:600 12px var(--ui);color:var(--muted);text-align:left;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr.total td{border-top:1px solid var(--ring);font-weight:600}
+.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+td sub{margin-left:3px;font-size:10px;color:var(--muted);vertical-align:baseline}
+td.map{font-weight:600}
+.good{color:var(--good)}.crit{color:var(--crit)}.muted{color:var(--muted)}
+.dl{font:500 12px var(--mono);white-space:nowrap}
+.dl.up{color:var(--good)}.dl.down{color:var(--crit)}.dl.zero,.dl.none{color:var(--muted)}
+.legend{display:inline-flex;flex-wrap:wrap;gap:4px 12px;font:400 12px var(--ui);color:var(--ink-2)}
+.sw{display:inline-block;width:10px;height:10px;margin-right:5px;border-radius:2px;vertical-align:-1px}
+.bars{display:grid;gap:3px;min-width:130px}
+.barrow{display:flex;align-items:center;gap:6px;font:12px var(--mono);color:var(--ink-2)}
+.bar{display:block;height:7px;border-radius:0 4px 4px 0;background:var(--t)}
+.bar.ct{background:var(--ct)}
+.chart{display:block;width:100%;height:auto}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.chart .tick{fill:var(--muted);font:10px var(--mono)}
+.chart .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .end{stroke:var(--surface);stroke-width:2}
+.chart .endlab{fill:var(--ink);font:500 11px var(--mono)}
+.minis{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.empty{color:var(--muted);margin:0}
+.topic .th{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.topic .th b{font-size:16px}
+.cnt{font:500 13px var(--mono);color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
+.chip{border:1px solid var(--ring);border-radius:999px;padding:1px 9px;font-size:13px;color:var(--ink-2)}
+.chip b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.card ul.goals{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px;font-size:14px}
+.goals .d{font:12px var(--mono);color:var(--muted);margin-right:8px}
+.pcard{display:grid;gap:12px}
+.phead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px}
+.phead h3{margin:0;font:600 21px var(--ui)}
+.role{font-size:13px;color:var(--muted)}
+.flag{padding:1px 9px;border:1px solid rgba(208,59,59,.55);border-radius:999px;font-size:12px;color:#ff8f8f}
+.pbody{display:grid;gap:14px}
+@media (min-width:860px){.pbody{grid-template-columns:140px minmax(0,1.5fr) minmax(0,1fr)}}
+.rating .big{font:500 34px/1.1 var(--mono);margin:4px 0}
+.tg{margin-top:6px;font-size:13px}
+.kvs{display:grid;gap:12px}
+.kv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.kv.grades{grid-template-columns:repeat(5,minmax(0,1fr));padding-top:10px;border-top:1px solid var(--line)}
+.kv .v{font:500 19px/1.2 var(--mono);margin:2px 0}
+.kv .v.sm{font-size:17px}
+.train{margin:0;padding-top:10px;border-top:1px solid var(--line);font-size:13px}
+.train b{margin-right:8px;font:600 11px var(--ui);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.mx th.c{text-align:center}
+.mx th.c small{display:block;font:400 11px var(--mono);color:var(--muted)}
+.mx th.nick{color:var(--ink);font-size:14px}
+.mx td.cell{padding:3px;border:none}
+.mx .c{min-width:66px;padding:6px 4px;border-radius:8px;text-align:center}
+.mx .c b{display:block;font:500 16px/1.2 var(--mono)}
+.mx .c span{font:11px var(--mono);color:rgba(255,255,255,.85)}
+.mx .c.few{border:1px solid var(--ring);color:var(--muted)}
+.mx .c.few span{color:var(--muted)}
+.sagp{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;padding:9px 0}
+.sagp+.sagp{border-top:1px solid var(--line)}
+.sagp .nick{font-weight:600}
+.sagl{display:grid;gap:5px}
+.sagr{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:10px;font-size:14px}
+.sagr .m{color:var(--crit);font-weight:600}
+.sagr .t{color:var(--ink-2)}
+.sagr .n{font:12px var(--mono);color:var(--muted)}
+.gtab th:first-child{color:var(--ink);font-size:15px}
+.gtab td:first-child{color:var(--ink-2)}
+.gtab .own{border-left:1px solid var(--ring)}
+.dum{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin-bottom:10px;font-size:14px}
+.dum>b{font:600 11px var(--ui);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.dum span b{font-family:var(--mono);font-weight:500}
+.day{display:grid;grid-template-columns:58px minmax(0,1fr);gap:10px}
+.dd b{display:block;font:500 16px var(--mono)}
+.dd span{color:var(--muted);font-size:13px}
+.rev{margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.rev>b{display:block;margin-bottom:4px;font-size:14px}
+.scores{display:flex;flex-wrap:wrap;gap:22px;margin-bottom:8px}
+.score .big{font:500 32px/1.1 var(--mono)}
+@media (max-width:540px){.sagp{grid-template-columns:1fr;gap:4px}.sagr{grid-template-columns:84px minmax(0,1fr) auto}.minis{grid-template-columns:1fr}}
+.linkbtn{margin-left:auto;background:none;border:0;padding:0;color:var(--muted);font:500 13px var(--ui);text-decoration:underline;cursor:pointer}
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--ground)}
+.gate form{width:min(360px,100%);display:grid;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+.gate h1{margin:0;font:600 20px/1.2 var(--display);color:var(--ink)}
+.gate p{margin:0;color:var(--muted);font-size:14px}
+.gate input[type=password]{height:44px;padding:0 12px;border-radius:8px;border:1px solid var(--ring);background:var(--ground);color:var(--ink);font:500 16px var(--ui)}
+.gate label{display:flex;gap:8px;align-items:center;color:var(--ink-2);font-size:14px}
+.gate button{height:44px;border:0;border-radius:8px;background:var(--ct);color:#fff;font:600 15px var(--ui);cursor:pointer}
+.gate button:disabled{opacity:.6;cursor:default}
+.gate .err{color:#ff8f8f}
+
+/* уровни соперника: выбирается несколько */
+.lvls{display:flex;align-items:center;gap:4px;flex-wrap:wrap;max-width:560px}
+.lvls .k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+.lvls button{border:1px solid var(--ring);background:transparent;color:var(--ink-2);border-radius:999px;
+  padding:2px 10px;font:13px/1.3 var(--ui);cursor:pointer}
+.lvls button[aria-pressed="true"]{background:var(--ct);border-color:var(--ct);color:#fff}
+.spots{margin:0;padding:8px 14px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.spots b{color:var(--muted);font:500 11px/1.4 var(--ui);text-transform:uppercase;letter-spacing:.06em}
+.spots .chips{display:flex;gap:6px;flex-wrap:wrap}
+small.pos{display:block;color:var(--muted);font-size:11px}
+.duel{grid-column:1/-1;padding-top:10px;margin-top:2px;border-top:1px solid var(--line)}
+.duel .k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.drow{display:grid;grid-template-columns:120px 62px minmax(0,1fr);align-items:baseline;gap:8px;font-size:13px}
+.drow span{color:var(--ink-2)}
+.drow b{font:500 17px/1.2 var(--mono)}
+.drow b.good{color:#8fe08f} .drow b.crit{color:#ff9a9a} .drow b.warn{color:#f0c674}
+.drow i{color:var(--muted);font-style:normal;font-size:12px}
+.norm .bar2{display:block;margin-top:2px;color:var(--muted)}
+.norm{margin-top:6px;font-size:12px;color:var(--ink-2)}
+.norm b{font-family:var(--mono);font-weight:500}
+.norm b.good{color:#8fe08f} .norm b.crit{color:#ff9a9a}
+.sd em{display:block;font-style:normal;font-size:11px;margin-top:1px}
+.sd em.good{color:#8fe08f} .sd em.crit{color:#ff9a9a} .sd em.muted{color:var(--muted)}
+/* два графика в ряд на всю ширину карточки */
+.prow{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px;
+  padding-top:12px;margin-top:2px;border-top:1px solid var(--line)}
+.prow .k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.prow .chart{width:100%;height:auto}
+.lvls button.none{opacity:.45}
+@media (max-width:720px){.prow{grid-template-columns:1fr}}
+line.goal{stroke:var(--good);stroke-dasharray:4 4;stroke-width:1}
+text.tick.goal{fill:var(--good)}
+/* стороны */
+.sides{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sd{border:1px solid var(--ring);border-radius:8px;padding:6px 8px}
+.sd span{display:block;font-size:11px;letter-spacing:.06em;color:var(--muted)}
+.sd b{font:500 19px/1.2 var(--mono)}
+.sd small{display:block;color:var(--muted);font-size:11px}
+.sd.t{border-color:rgba(217,89,38,.5)} .sd.ct{border-color:rgba(57,135,229,.5)}
+.sd2{display:flex;gap:6px;justify-content:center;margin-top:2px;font:400 10px/1.2 var(--mono)}
+.sd2 .t{color:#f0a184;font-style:normal} .sd2 .ct{color:#9dc3f2;font-style:normal}
+.train .cnt{color:var(--ink)}
+/* думалка тремя числами */
+.dum .three{display:flex;gap:10px;flex-wrap:wrap}
+.dum .three i{font-style:normal;color:var(--ink-2)}
+.dum .three i.good{color:#8fe08f} .dum .three i.crit{color:#ff9a9a}
+/* список матчей */
+.matches{padding:0}
+.match{border-bottom:1px solid var(--line)}
+.match:last-child{border-bottom:0}
+.match summary{display:grid;grid-template-columns:52px 96px minmax(0,1fr) 92px 64px 96px;gap:8px;align-items:center;
+  padding:9px 14px;cursor:pointer;list-style:none}
+.match summary::-webkit-details-marker{display:none}
+.match summary:hover{background:rgba(255,255,255,.03)}
+.match .d{color:var(--muted);font-family:var(--mono);font-size:13px}
+.match .mp{font-weight:600}
+.match .vs{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.match .lv{color:var(--muted);font-size:12px}
+.match .sc{font-family:var(--mono);font-weight:500}
+.match .sc.win{color:#8fe08f} .match .sc.loss{color:#ff9a9a} .match .sc.draw{color:var(--ink-2)}
+.match .tp{color:var(--muted);font-size:12px;text-align:right}
+.match .tp a{color:var(--ct)}
+.mdet{padding:2px 14px 14px}
+.mmeta{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.mmeta span{color:var(--ink-2);font-size:13px}
+.mmeta i{display:block;color:var(--muted);font-size:11px;font-style:normal;text-transform:uppercase;letter-spacing:.06em}
+table.mtab td,table.mtab th{padding:3px 8px}
+/* списки в разделе про игрока */
+ul.tl{margin:0;padding:0;list-style:none}
+ul.tl li{padding:3px 0;border-bottom:1px solid var(--line);font-size:14px}
+ul.tl li:last-child{border-bottom:0}
+ul.tl .d{display:inline-block;min-width:46px;color:var(--muted);font-family:var(--mono);font-size:12px}
+@media (max-width:720px){
+  .match summary{grid-template-columns:46px 1fr 56px;grid-template-areas:"d mp sc" "vs vs lv" "tp tp tp";row-gap:2px}
+  .match .d{grid-area:d}.match .mp{grid-area:mp}.match .sc{grid-area:sc;text-align:right}
+  .match .vs{grid-area:vs}.match .lv{grid-area:lv;text-align:right}.match .tp{grid-area:tp;text-align:left}
+  .sides{grid-template-columns:1fr}
+}
+</style>
+
+<div class="gate" id="gate" hidden>
+  <form id="gate-form">
+    <h1 id="gate-team">Команда</h1>
+    <p>Недельный дашборд. Пароль у капитана.</p>
+    <input type="password" id="gate-pass" autocomplete="current-password" placeholder="пароль" aria-label="Пароль" required>
+    <label><input type="checkbox" id="gate-remember" checked> запомнить на этом устройстве</label>
+    <button type="submit">Открыть</button>
+    <p class="err" id="gate-err" hidden>Пароль не подошёл.</p>
+  </form>
+</div>
+<div class="wrap" id="wrap">
+  <div class="brand"><span class="team" id="team">WeClear NXT</span><button type="button" class="linkbtn" id="logout" hidden>выйти</button></div>
+  <p class="sample" id="sample" hidden>Пример на выдуманных данных. Видно, как устроена страница.</p>
+  <noscript><p class="sample">Страница собирается скриптом. Если здесь пусто, открой её в обычном браузере: Chrome или Safari.</p></noscript>
+  <div class="filters" role="toolbar" aria-label="Фильтры">
+    <div class="week"><button type="button" id="wprev" aria-label="Неделя назад">◀</button><span id="wlabel"></span><button type="button" id="wnext" aria-label="Неделя вперёд">▶</button></div>
+    <div class="seg" data-key="period" role="group" aria-label="Период">
+      <button type="button" data-v="week">неделя</button><button type="button" data-v="4w">4 недели</button><button type="button" data-v="all">всё время</button>
+    </div>
+    <div class="seg" data-key="type" role="group" aria-label="Матчи">
+      <button type="button" data-v="all">все</button><button type="button" data-v="prac">праки</button><button type="button" data-v="off">офки</button>
+    </div>
+    <div class="lvls" id="f-lvl" role="group" aria-label="Уровень соперника"></div>
+    <label class="sel"><span>карта</span><select id="f-map"></select></label>
+    <label class="sel"><span>игрок</span><select id="f-player"></select></label>
+  </div>
+  <main id="app"></main>
+</div>
+
+<script id="data" type="application/json">{"locked":{"iter":250000,"salt":"32PRb3Wzb5azaXvSkLjNxw==","iv":"HjzZuV5YfTkk8bl+","ct":"0yRtT+/Z+jrPmKvXMCPAZel37SCTijSLY+AiU7fOhKAuPhXz9xeNNpSx9CDBKqX1kT52QxJAUNH/4tQzVKGtM+qSwlzvMiIgI02l+UlBHP1xDFWiFOGwamcAVZLGsXM9vLa34+GZ+yqfyo+OdZGuPLqKKn9fGKuQeD3phxs8fOvMX5BqcvgJT8OChrgKuUMkP4ZjkLMok9l2bCYzRnnYUFnU7uMcFETtT+Kegpns5D0l71rx5cm/8GU1+I+VP3uIsgnTcpJu221Jbc4J+YzGc/4Y0iaJOS5Qk8uFLY0ikiB1t7drE3+5xaKhLYsAR5pWvdxMptnFKGrTWvXB5Z7xzAO/Iqhr8ZUVCqXL52bZelvGwpvEbI6o980sihoJVOylStsNEodAMiaL9SvDImrEgwRlQzW0MdR/3yutiKexRCcKjGXRalFoIpzkD5cisGFuM5RlqoK2XmnQ20tORuBltGSbz3DL2z46B2ogyWH+7ckdW52Ay/P/NZAUbKfojc8ia3V28mAXPJzCBGdPCv8WeRNaqupU/JgnJ6UeA1O8LmDfz+Y9XfqkjhxsXdmEkFlAddHmWjcWDtUEyIobO3mrH6B2sN2+fCY=","team":"WeClear NXT"}}</script>
+<script>
+function start(D) {
+  const W = D.weeks;
+  const CATS = ['мик', 'мак', 'ком', 'кол'];
+  const CATS_FULL = ['микро', 'макро', 'коммуникация', 'коллы'];
+  const NOLVL = 'не указан';
+  /* Кто где стоит: лист Map Pool. Нужно, чтобы понимать, почему на карте рейтинг такой. */
+  const posOf = (nick, map, side) => ((D.positions || {})[map] || {})[side]?.[nick] || null;
+  /* Таргет спота: сколько на этой позиции выдаёт средний игрок топ-50.
+     Уровни между картами собраны по-разному, поэтому сравнивать честно только внутри карты. */
+  const TG = new Map((D.targets || []).map(t => [`${t.map}|${t.side}|${t.p}`, t]));
+  const tgOf = (nick, map, side) => TG.get(`${map}|${side}|${nick}`) || null;
+  function tgLine(nick, map) {
+    const c = tgOf(nick, map, 'CT'), t = tgOf(nick, map, 'T');
+    if (!c && !t) return '';
+    const one = x => x ? x.v.toFixed(2) + (x.found ? '' : '*') : '—';
+    return `таргет спота: CT ${one(c)}, T ${one(t)}`;
+  }
+  const posPair = (nick, map) => {
+    const t = posOf(nick, map, 'T'), c = posOf(nick, map, 'CT');
+    return t || c ? `${c || '—'} за CT, ${t || '—'} за T` : null;
+  };
+  const lvlOf = m => (m.lvl || '').trim() || NOLVL;
+  const SAG = {adr: 4, kd: 0.08, g: 0.3};
+  const S = {week: W.length - 1, period: 'week', type: 'all', lvls: new Set(), map: 'all', player: 'all'};
+  const WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+  const mean = a => { const v = a.filter(x => x != null && !Number.isNaN(x)); return v.length ? v.reduce((p, c) => p + c, 0) / v.length : null; };
+  const fmt = (v, d = 0) => v == null ? '—' : v.toFixed(d);
+  const ddmm = iso => `${iso.slice(8, 10)}.${iso.slice(5, 7)}`;
+  const wday = iso => WD[new Date(iso + 'T12:00:00').getDay()];
+  const plural = (n, one, few, many) => { const a = Math.abs(n) % 100, b = a % 10; return `${n} ${a > 10 && a < 20 ? many : b === 1 ? one : b >= 2 && b <= 4 ? few : many}`; };
+  const mapsN = n => plural(n, 'карта', 'карты', 'карт');
+  const section = (title, html) => `<section class="sec"><h2>${esc(title)}</h2>${html}</section>`;
+
+  // ── периоды и выборка ──
+  const span = () => S.period === 'week' ? 1 : S.period === '4w' ? 4 : null;
+  const rangeEnding = (end, n) => end < 0 ? null : n == null ? [W[0].lo, W[end].hi] : [W[Math.max(0, end - n + 1)].lo, W[end].hi];
+  const cur = () => rangeEnding(S.week, span());
+  const prev = () => span() == null ? null : rangeEnding(S.week - span(), span());
+  const weekR = i => [W[i].lo, W[i].hi];
+  const trendIdx = () => { const a = []; for (let i = Math.max(0, S.week - 7); i <= S.week; i++) a.push(i); return a; };
+  function pick(r, useMap = true) {
+    if (!r) return [];
+    return D.matches.filter(m => m.date >= r[0] && m.date <= r[1]
+      && (S.type === 'all' || (S.type === 'off') === Boolean(m.tour))
+      && (!S.lvls.size || S.lvls.has(lvlOf(m)))
+      && (!useMap || S.map === 'all' || m.map === S.map));
+  }
+
+  // ── счёт ──
+  const won = m => m.us == null || m.them == null ? null : m.us === m.them ? 'draw' : m.us > m.them;
+  function tally(ms) { const t = {w: 0, l: 0, d: 0, n: ms.length}; for (const m of ms) { const x = won(m); if (x === true) t.w++; else if (x === false) t.l++; else if (x === 'draw') t.d++; } return t; }
+  const wlStr = t => `${t.w}–${t.l}${t.d ? '–' + t.d : ''}`;
+  function sideSplit(ms, s) {
+    let pw = 0, pt = 0, cw = 0, cn = 0, fw = 0, fn = 0;
+    for (const m of ms) {
+      const p = m[s + 'p'], x = m[s + '2'];
+      if (p !== true && p !== false) continue;
+      pt++; if (p) pw++;
+      if (x !== true && x !== false) continue;
+      if (p) { cn++; if (x) cw++; } else { fn++; if (x) fw++; }
+    }
+    return [[pw, pt], [cw, cn], [fw, fn]];
+  }
+  function byMap(ms) { const o = new Map(); for (const m of ms) { if (!m.map) continue; if (!o.has(m.map)) o.set(m.map, []); o.get(m.map).push(m); } return [...o.entries()].sort((a, b) => b[1].length - a[1].length); }
+  function rowsOf(ms, nick) { const out = []; for (const m of ms) for (const p of m.players) if (p.p === nick) out.push(Object.assign({rounds: (m.us ?? 0) + (m.them ?? 0), map: m.map, date: m.date}, p)); return out; }
+  function agg(rows) {
+    const ok = rows.filter(x => x.k != null && x.d != null && x.rounds);
+    const R = ok.reduce((s, x) => s + x.rounds, 0);
+    const K = ok.reduce((s, x) => s + x.k, 0), De = ok.reduce((s, x) => s + x.d, 0), A = ok.reduce((s, x) => s + (x.a || 0), 0);
+    const adrR = ok.reduce((s, x) => s + (x.adr || 0) * x.rounds, 0);
+    let rating = null, src = null;
+    const real = ok.filter(x => x.r != null);                 // рейтинг матча с праккома
+    if (real.length && real.length === ok.length) {
+      const rr = real.reduce((s, x) => s + x.r * x.rounds, 0);
+      rating = rr / R; src = 'пракком';
+    } else if (R) {
+      const kpr = K / R, dpr = De / R, apr = A / R, adr = adrR / R;
+      rating = 0.0073 * D.kast + 0.3591 * kpr - 0.5329 * dpr + 0.2372 * (2.13 * kpr + 0.42 * apr - 0.41) + 0.0032 * adr + 0.1587;
+      src = 'формула';
+    }
+    const g = [0, 1, 2, 3].map(q => mean(rows.map(x => x.g ? x.g[q] : null)));
+    const ek = rows.reduce((s2, x) => s2 + (x.ek || 0), 0), ed = rows.reduce((s2, x) => s2 + (x.ed || 0), 0);
+    return {n: rows.length, rating, src, ek, ed, duels: ek + ed,
+            win: ek + ed ? 100 * ek / (ek + ed) : null,
+            adr: mean(rows.map(x => x.adr)), kd: De ? K / De : null,
+            hs: mean(rows.map(x => x.hs)), ud: mean(rows.map(x => x.ud)), g, gavg: mean(g),
+            ct: sideAgg(rows, 'ct'), t: sideAgg(rows, 't')};
+  }
+  function sideAgg(rows, side) {
+    /* Стороны приходят с праккома: в таблице их нет, поэтому где нет — там прочерк. */
+    const ok = rows.map(x => x[side]).filter(x => x && x.rounds);
+    if (!ok.length) return null;
+    const R = ok.reduce((s, x) => s + x.rounds, 0);
+    const K = ok.reduce((s, x) => s + x.k, 0), De = ok.reduce((s, x) => s + x.d, 0);
+    return {rating: ok.reduce((s, x) => s + x.rating * x.rounds, 0) / R,
+            adr: ok.reduce((s, x) => s + x.adr * x.rounds, 0) / R,
+            kd: De ? K / De : null, rounds: R, n: ok.length};
+  }
+  function teamGrade(ms) { const v = []; for (const m of ms) for (const p of m.players) if (p.g) for (const x of p.g) if (x != null) v.push(x); return mean(v); }
+  function falling(vals, eps, idx) {
+    /* Четыре недели подряд и три шага вниз, каждый больше eps. Неделя без игр рвёт ряд. */
+    const v = vals.slice(-4);
+    if (!(v.length === 4 && v.every(x => x != null) && v[0] - v[1] > eps && v[1] - v[2] > eps && v[2] - v[3] > eps)) return null;
+    const i = (idx || []).slice(-4);
+    return {vals: v, from: i.length ? W[i[0]].lo : null, to: i.length ? W[i[3]].hi : null};
+  }
+
+  // ── вид ──
+  function delta(now, was, d = 0) {
+    if (now == null || was == null) return '<span class="dl none">—</span>';
+    const r = Number((now - was).toFixed(d));
+    if (r === 0) return '<span class="dl zero">• 0</span>';
+    return `<span class="dl ${r > 0 ? 'up' : 'down'}">${r > 0 ? '▲' : '▼'} ${Math.abs(r).toFixed(d)}</span>`;
+  }
+  function pctTd(w, n) {
+    if (!n) return '<td class="num muted">—</td>';
+    const v = 100 * w / n, cls = n < 3 ? 'muted' : v >= 55 ? 'good' : v <= 45 ? 'crit' : '';
+    return `<td class="num ${cls}">${Math.round(v)}%<sub>${n}</sub></td>`;
+  }
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const LO = hex('#e66767'), MID = hex('#383835'), HI = hex('#3987e5');
+  function tint(t) { t = Math.max(-1, Math.min(1, t)); const to = t < 0 ? LO : HI, k = Math.abs(t); return `rgb(${MID.map((x, i) => Math.round(x + (to[i] - x) * k)).join(',')})`; }
+  function line(vals, labels, {min, max, dec = 0, suf = '', w = 300, h = 118, color = 'var(--ct)', goal = null} = {}) {
+    const k = w / 300, pl = 32 * k, pr = 14 * k, pt = 16 * k, pb = 22 * k;
+    const real = vals.map((v, i) => [i, v]).filter(p => p[1] != null);
+    if (!real.length) return '<p class="empty">нет данных</p>';
+    let lo = min ?? Math.min(...real.map(p => p[1]).concat(goal == null ? [] : [goal]));
+    let hi = max ?? Math.max(...real.map(p => p[1]).concat(goal == null ? [] : [goal]));
+    if (hi - lo < 1e-9) { lo -= 0.5; hi += 0.5; }
+    const X = i => pl + (w - pl - pr) * (vals.length < 2 ? 0.5 : i / (vals.length - 1));
+    const Y = v => pt + (h - pt - pb) * (1 - (v - lo) / (hi - lo));
+    let out = '';
+    for (const t of [lo, (lo + hi) / 2, hi]) out += `<line class="gl" x1="${pl}" x2="${w - pr}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}"/><text class="tick" x="${pl - 5}" y="${(Y(t) + 3.5).toFixed(1)}" text-anchor="end">${t.toFixed(dec)}${suf}</text>`;
+    let d = '', pen = false;
+    vals.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)} `; pen = true; });
+    if (goal != null && goal >= lo && goal <= hi) out += `<line class="goal" x1="${pl}" x2="${w - pr}" y1="${Y(goal).toFixed(1)}" y2="${Y(goal).toFixed(1)}"/><text class="tick goal" x="${w - pr}" y="${(Y(goal) - 4).toFixed(1)}" text-anchor="end">цель ${goal.toFixed(dec)}</text>`;
+    out += `<path class="ln" d="${d}" style="stroke:${color};stroke-width:${(2 * Math.max(1, k)).toFixed(1)}"/>`;
+    const last = real[real.length - 1][0];
+    for (const [i, v] of real) out += `<circle class="${i === last ? 'end' : ''}" cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${((i === last ? 4.5 : 2.5) * Math.max(1, k)).toFixed(1)}" style="fill:${color}"><title>${ddmm(labels[i])} — ${v.toFixed(dec)}${suf}</title></circle>`;
+    out += `<text class="endlab" x="${Math.min(X(last), w - pr - 10 * k).toFixed(1)}" y="${(Y(vals[last]) - 9 * k).toFixed(1)}" text-anchor="middle" style="font-size:${(11 * Math.max(1, k)).toFixed(1)}px">${vals[last].toFixed(dec)}${suf}</text>`;
+    out += `<text class="tick" x="${pl}" y="${h - 5 * k}">${ddmm(labels[0])}</text><text class="tick" x="${w - pr}" y="${h - 5 * k}" text-anchor="end">${ddmm(labels[labels.length - 1])}</text>`;
+    return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img">${out}</svg>`;
+  }
+  const noteLine = l => { const i = l.indexOf(':'); return i > 0 && i <= 16 ? `<p><span>${esc(l.slice(0, i + 1))}</span> ${esc(l.slice(i + 1).trim())}</p>` : `<p>${esc(l)}</p>`; };
+
+  // ══ Команда ══
+  function secTeam() {
+    const ms = pick(cur()), pv = pick(prev());
+    const P = ms.filter(m => !m.tour), O = ms.filter(m => m.tour);
+    const tp = tally(P), to = tally(O);
+    const T = ms.reduce((s, m) => s + (m.t || 0), 0), C = ms.reduce((s, m) => s + (m.ct || 0), 0);
+    const g = teamGrade(ms), gp = teamGrade(pv);
+    const pc = t => t.w + t.l ? ` · ${Math.round(100 * t.w / (t.w + t.l))}%` : '';
+    const tiles = `<div class="grid tiles">
+      <div class="card tile"><div class="k">Праки</div><div class="val">${P.length ? wlStr(tp) : '—'}</div><div class="note">${P.length ? mapsN(P.length) + pc(tp) : 'не было'}</div></div>
+      <div class="card tile"><div class="k">Офки</div><div class="val">${O.length ? wlStr(to) : '—'}</div><div class="note">${O.length ? mapsN(O.length) + pc(to) : 'не было'}</div></div>
+      <div class="card tile"><div class="k">Раунды T / CT</div><div class="val">${T} / ${C}</div><div class="split"><i style="flex:${T || 1};background:var(--t)"></i><i style="flex:${C || 1};background:var(--ct)"></i></div></div>
+      <div class="card tile"><div class="k">Средний балл</div><div class="val">${fmt(g, 2)}</div><div class="note">${delta(g, gp, 2)}${span() ? ' к прошлому периоду' : ''}</div></div>
+    </div>`;
+
+    const mp = byMap(ms);
+    const bmax = Math.max(1, ...mp.map(([, l]) => Math.max(l.reduce((s, m) => s + (m.t || 0), 0), l.reduce((s, m) => s + (m.ct || 0), 0))));
+    let rows = '';
+    for (const [name, list] of mp) {
+      const p = list.filter(m => !m.tour), o = list.filter(m => m.tour), a = tally(p), b = tally(o);
+      const t = list.reduce((s, m) => s + (m.t || 0), 0), c = list.reduce((s, m) => s + (m.ct || 0), 0);
+      rows += `<tr><td class="map">${esc(name)}</td><td class="num">${p.length ? wlStr(a) : '—'}</td>${pctTd(a.w, a.w + a.l)}<td class="num">${o.length ? wlStr(b) : '—'}</td>${pctTd(b.w, b.w + b.l)}
+        <td><div class="bars"><div class="barrow"><span class="bar" style="width:${(90 * t / bmax).toFixed(1)}px"></span>${t}</div><div class="barrow"><span class="bar ct" style="width:${(90 * c / bmax).toFixed(1)}px"></span>${c}</div></div></td></tr>`;
+    }
+    let prow = '';
+    for (const [name, list] of mp.concat([['Итого', ms]])) {
+      prow += `<tr class="${name === 'Итого' ? 'total' : ''}"><td class="map">${esc(name)}</td>${['ct', 't'].flatMap(s => sideSplit(list, s)).map(([w, n]) => pctTd(w, n)).join('')}</tr>`;
+    }
+    const lv = new Map();
+    for (const m of ms) { const k = m.lvl || 'не указан'; if (!lv.has(k)) lv.set(k, []); lv.get(k).push(m); }
+    const lord = k => { const i = D.levels.indexOf(k); return i < 0 ? 99 : i; };
+    let lrow = '';
+    for (const k of [...lv.keys()].sort((a, b) => lord(a) - lord(b))) {
+      const l = lv.get(k), p = tally(l.filter(m => !m.tour)), o = tally(l.filter(m => m.tour));
+      lrow += `<tr><td class="map">${esc(k)}</td><td class="num">${p.n ? wlStr(p) : '—'}</td>${pctTd(p.w, p.w + p.l)}<td class="num">${o.n ? wlStr(o) : '—'}</td>${pctTd(o.w, o.w + o.l)}</tr>`;
+    }
+    const idx = trendIdx(), labels = idx.map(i => W[i].lo);
+    const wr = idx.map(i => { const t = tally(pick(weekR(i))); return t.w + t.l ? 100 * t.w / (t.w + t.l) : null; });
+    const gr = idx.map(i => teamGrade(pick(weekR(i))));
+    const empty = '<p class="empty">За период матчей нет.</p>';
+    return section('Команда', `${tiles}
+      <div class="grid two stack">
+        <div class="card"><h3>Карты <span class="legend"><span><i class="sw" style="background:var(--t)"></i>T</span><span><i class="sw" style="background:var(--ct)"></i>CT</span></span></h3>
+          ${mp.length ? `<div class="scroll"><table><tr><th>Карта</th><th class="num">праки</th><th class="num">win%</th><th class="num">офки</th><th class="num">win%</th><th>раунды</th></tr>${rows}</table></div>` : empty}</div>
+        <div class="card"><h3>Пистолетки и второй раунд</h3>
+          ${mp.length ? `<div class="scroll"><table><tr><th>Карта</th><th class="num">CT пист</th><th class="num">CT конв</th><th class="num">CT форс</th><th class="num">T пист</th><th class="num">T конв</th><th class="num">T форс</th></tr>${prow}</table></div>
+          <p class="muted small">Выиграли пист, второй раунд идёт в конверсию. Проиграли, идёт в форс. Эко не считается. Мелкая цифра показывает, сколько было таких раундов, серым отмечено меньше трёх.</p>` : empty}</div>
+        <div class="card"><h3>По уровню соперника</h3>
+          ${lrow ? `<div class="scroll"><table><tr><th>Уровень</th><th class="num">праки</th><th class="num">win%</th><th class="num">офки</th><th class="num">win%</th></tr>${lrow}</table></div>` : empty}</div>
+        <div class="card"><h3>Тренд по неделям</h3>
+          <div class="minis"><div><div class="k">винрейт</div>${line(wr, labels, {min: 0, max: 100, suf: '%'})}</div><div><div class="k">средний балл</div>${line(gr, labels, {min: 1, max: 5, dec: 1})}</div></div></div>
+      </div>`);
+  }
+
+  // ══ Темы пракков ══
+  function secTopics() {
+    const ms = pick(cur()).filter(m => m.drill).sort((a, b) => a.date < b.date ? -1 : 1);
+    const t = new Map();
+    for (const m of ms) {
+      const k = m.drill.toLowerCase().replace(/\s+/g, ' ');
+      if (!t.has(k)) t.set(k, {name: m.drill, n: 0, how: new Map(), goals: []});
+      const e = t.get(k); e.n++;
+      if (m.how) e.how.set(m.how, (e.how.get(m.how) || 0) + 1);
+      if (m.goal) e.goals.push([m.date, m.goal]);
+    }
+    const lead = '<p class="lead">То, что не считается цифрой: сколько пракков гоняли тему, как шло и последние выводы.</p>';
+    if (!t.size) return section('Темы пракков', lead + '<div class="card"><p class="empty">За период тем не записано.</p></div>');
+    const items = [...t.values()].sort((a, b) => b.n - a.n).map(e => {
+      const how = [...e.how.entries()].sort((a, b) => b[1] - a[1]).map(([h, c]) => `<span class="chip">${esc(h)} <b>${c}</b></span>`).join('');
+      const seen = new Set(), last = [];
+      for (const [d, g] of e.goals.slice().reverse()) { const k = g.toLowerCase(); if (seen.has(k)) continue; seen.add(k); last.push(`<li><span class="d">${ddmm(d)}</span>${esc(g)}</li>`); if (last.length === 2) break; }
+      return `<div class="card topic"><div class="th"><b>${esc(e.name)}</b><span class="cnt">${plural(e.n, 'прак', 'прака', 'пракков')}</span></div>${how ? `<div class="chips"><span class="k">как оно</span>${how}</div>` : ''}${last.length ? `<ul class="goals">${last.join('')}</ul>` : ''}</div>`;
+    }).join('');
+    return section('Темы пракков', `${lead}<div class="grid two">${items}</div>`);
+  }
+
+  // ══ Игроки ══
+  function secPlayers() {
+    const nicks = S.player === 'all' ? D.roster.map(r => r.nick) : [S.player];
+    const ms = pick(cur()), pv = pick(prev()), idx = trendIdx(), labels = idx.map(i => W[i].lo), wk = W[S.week];
+    const base = teamBase(ms);
+    const duelsAll = D.roster.reduce((t, r) => t + agg(rowsOf(ms, r.nick)).duels, 0);
+    const cards = nicks.map(nick => {
+      const r = D.roster.find(x => x.nick === nick) || {role: 'роль не задана', target: null};
+      const a = agg(rowsOf(ms, nick)), b = agg(rowsOf(pv, nick));
+      const ser = idx.map(i => agg(rowsOf(pick(weekR(i)), nick)));
+      const rt = ser.map(x => x.rating), gt = ser.map(x => x.gavg);
+      const flags = [];
+      const fl = (vals, eps, what, dec) => {
+        const f = falling(vals, eps, idx);
+        if (!f) return;
+        flags.push(`<span class="flag" title="Считается по восьми последним неделям при текущих фильтрах. Неделя без игр рвёт ряд.">▼ ${what}: четыре недели подряд вниз, ${ddmm(f.from)}–${ddmm(f.to)} · ${f.vals.map(v => v.toFixed(dec)).join(' → ')}</span>`);
+      };
+      fl(rt, 0.01, 'рейтинг', 2);
+      fl(gt, 0.05, 'балл', 1);
+      const target = r.target == null ? '<span class="muted">цель не задана</span>'
+        : a.rating == null ? `цель ${r.target.toFixed(2)}`
+        : `<span class="${a.rating >= r.target ? 'good' : 'crit'}">${a.rating >= r.target ? '▲' : '▼'} цель ${r.target.toFixed(2)}</span>`;
+      const norm = normBlock(r, a, base);
+      const spots = Object.keys(D.positions || {}).filter(m => posPair(nick, m))
+        .map(m => `<span class="chip">${esc(m)} <b>${esc(posPair(nick, m))}</b></span>`).join('');
+      const share = duelsAll ? 100 * a.duels / duelsAll : null;
+      const stat = (k, lab, d) => `<div><div class="k">${lab}</div><div class="v">${fmt(a[k], d)}</div>${delta(a[k], b[k], d)}</div>`;
+      const grade = q => `<div><div class="k">${CATS[q]}</div><div class="v sm">${fmt(a.g[q], 1)}</div>${delta(a.g[q], b.g[q], 1)}</div>`;
+      const tr = D.training.filter(x => x.p === nick && x.date >= wk.lo && x.date <= wk.hi);
+      const cnt = key => { const c = new Map(); for (const x of tr) if (x[key]) c.set(x[key], (c.get(x[key]) || 0) + 1); return [...c.entries()].sort((p, q) => q[1] - p[1]).map(([s, n]) => n > 1 ? `${esc(s)} ×${n}` : esc(s)).join(', '); };
+      const days = new Set(tr.map(x => x.date)).size;
+      const doneN = tr.reduce((s, x) => s + (x.micro ? 1 : 0) + (x.macro ? 1 : 0), 0);
+      const trainTxt = tr.length
+        ? [`<b class="cnt">${plural(doneN, 'штука', 'штуки', 'штук')}</b> за ${plural(days, 'день', 'дня', 'дней')}`,
+           cnt('micro') && 'микро: ' + cnt('micro'), cnt('macro') && 'макро: ' + cnt('macro')].filter(Boolean).join(' · ')
+        : '<span class="muted">не записано</span>';
+      return `<article class="card pcard">
+        <div class="phead"><h3>${esc(nick)}</h3><span class="role">${esc(r.role)}</span>${flags.join('')}</div>
+        <div class="pbody">
+          <div class="rating"><div class="k">Rating</div><div class="big">${fmt(a.rating, 2)}</div>${delta(a.rating, b.rating, 2)}${norm}<div class="tg">${target}</div></div>
+          <div class="kvs"><div class="kv">${stat('adr', 'ADR', 0)}${stat('kd', 'K/D', 2)}${stat('hs', 'HS%', 0)}<div><div class="k">карт</div><div class="v">${a.n}</div><div class="dl none">за период</div></div></div>
+            <div class="kv grades"><div><div class="k">балл</div><div class="v sm">${fmt(a.gavg, 2)}</div>${delta(a.gavg, b.gavg, 2)}</div>${[0, 1, 2, 3].map(grade).join('')}</div></div>
+          <div class="sides">
+            <div class="sd t"><span>T</span><b>${fmt(a.t && a.t.rating, 2)}</b>${sideNorm(r, a.t, base, 2)}<small>${a.t ? 'ADR ' + Math.round(a.t.adr) + ' · K/D ' + fmt(a.t.kd, 2) : 'нет данных'}</small></div>
+            <div class="sd ct"><span>CT</span><b>${fmt(a.ct && a.ct.rating, 2)}</b>${sideNorm(r, a.ct, base, 1)}<small>${a.ct ? 'ADR ' + Math.round(a.ct.adr) + ' · K/D ' + fmt(a.ct.kd, 2) : 'нет данных'}</small></div>
+          </div>
+          ${duelBlock(r, a, share)}
+          <div class="prow">
+            <div><div class="k">рейтинг по неделям <span class="muted">${rt.length} недель, при текущих фильтрах</span></div>${line(rt, labels, {dec: 2, w: 460, h: 190, goal: r.target ?? null})}</div>
+            <div><div class="k">балл по неделям</div>${line(gt, labels, {min: 1, max: 5, dec: 1, w: 460, h: 190})}</div>
+          </div>
+        </div>
+        ${spots ? `<p class="spots"><b>Позиции</b><span class="chips">${spots}</span></p>` : ''}
+        <p class="train"><b>Инд. за неделю ${ddmm(wk.lo)}–${ddmm(wk.hi)}</b>${trainTxt}</p>
+      </article>`;
+    }).join('');
+    const src = agg(rowsOf(ms, nicks[0])).src;
+    const how = src === 'пракком'
+      ? 'Рейтинг и стороны взяты с праккома по каждому матчу.'
+      : `Рейтинг примерный, по формуле HLTV 2.0: KAST в табе нет, взят средний ${D.kast}%. Матчи, которых нет на праккоме, считаются так.`;
+    return section('Игроки', `<p class="lead">Стрелка показывает, куда сдвинулось к прошлому периоду. ${how} `
+      + `«Норма роли» это ожидаемый рейтинг под его роль.</p><div class="grid">${cards}</div>`);
+  }
+
+  // ══ По картам ══
+  function secMaps() {
+    const ms = pick(cur(), false);
+    const nicks = S.player === 'all' ? D.roster.map(r => r.nick) : [S.player];
+    let mp = byMap(ms);
+    if (S.map !== 'all') mp = mp.filter(([m]) => m === S.map);
+    if (!mp.length) return section('По картам', '<div class="card"><p class="empty">За период матчей нет.</p></div>');
+    const maps = mp.map(([m]) => m), count = new Map(mp.map(([m, l]) => [m, l.length]));
+    const info = {};
+    let body = '';
+    for (const nick of nicks) {
+      const rows = rowsOf(ms, nick);
+      const all = agg(rows);
+      const own = [0, 1, 2, 3].map(q => mean(rows.map(x => x.g ? x.g[q] : null)));
+      info[nick] = {rows, adrBase: all.adr, base: all.rating, kdAll: all.kd, own};
+      body += `<tr><th class="nick">${esc(nick)}</th>` + maps.map(m => {
+        const r = rows.filter(x => x.map === m), a = agg(r);
+        if (a.rating == null) return '<td class="cell"><div class="c few"><b>—</b></div></td>';
+        const few = r.length < 2, sd = x => x ? x.rating.toFixed(2) : '—';
+        const bg = few || all.rating == null ? '' : ` style="background:${tint((a.rating - all.rating) / 0.35)}"`;
+        const pp = posPair(nick, m), tg = tgLine(nick, m);
+        return `<td class="cell"><div class="c${few ? ' few' : ''}"${bg} title="${esc(nick)} на ${esc(m)}: рейтинг ${a.rating.toFixed(2)} при своих ${fmt(all.rating, 2)} за период, ${mapsN(r.length)}${pp ? '. Позиция: ' + esc(pp) : ''}${tg ? '. ' + esc(tg) : ''}">`
+          + `<b>${a.rating.toFixed(2)}</b><span>K/D ${fmt(a.kd, 2)}</span>`
+          + `<span class="sd2"><i class="t">T ${sd(a.t)}</i><i class="ct">CT ${sd(a.ct)}</i></span></div></td>`;
+      }).join('') + '</tr>';
+    }
+    const head = '<tr><th></th>' + maps.map(m => `<th class="c">${esc(m)}<small>${mapsN(count.get(m))}</small></th>`).join('') + '</tr>';
+
+    let sag = '';
+    for (const nick of nicks) {
+      const {rows, adrBase, kdAll, own} = info[nick];
+      const found = [];
+      for (const m of maps) {
+        const r = rows.filter(x => x.map === m);
+        if (r.length < 2) continue;
+        const toks = []; let sev = 0;
+        const v = mean(r.map(x => x.adr));
+        if (v != null && adrBase != null && Math.round(adrBase) - Math.round(v) >= SAG.adr) { toks.push(`ADR <b>${Math.round(v)}</b> на карте, своё ${Math.round(adrBase)}`); sev += (adrBase - v) / 12; }
+        const k = r.reduce((s, x) => s + (x.k || 0), 0), d = r.reduce((s, x) => s + (x.d || 0), 0);
+        if (d && kdAll != null && Number(kdAll.toFixed(2)) - Number((k / d).toFixed(2)) >= SAG.kd - 1e-9) { toks.push(`K/D <b>${(k / d).toFixed(2)}</b> на карте, своё ${kdAll.toFixed(2)}`); sev += (kdAll - k / d) / 0.15; }
+        const gs = [0, 1, 2, 3].map(q => [q, mean(r.map(x => x.g ? x.g[q] : null))])
+          .filter(([q, gv]) => gv != null && own[q] != null && Number(own[q].toFixed(1)) - Number(gv.toFixed(1)) >= SAG.g - 1e-9)
+          .sort((p, q) => (own[q[0]] - q[1]) - (own[p[0]] - p[1]));
+        for (const [q, gv] of gs) { toks.push(`${CATS_FULL[q]} <b>${gv.toFixed(1)}</b> на карте, своё ${own[q].toFixed(1)}`); sev += (own[q] - gv) / 0.8; }
+        if (toks.length) found.push({m, n: r.length, toks, sev});
+      }
+      found.sort((p, q) => q.sev - p.sev);
+      sag += `<div class="sagp"><div class="nick">${esc(nick)}</div><div class="sagl">${found.length
+        ? found.map(f => `<div class="sagr"><span class="m">▼ ${esc(f.m)}</span><span class="t">${f.toks.join(' · ')}</span><span class="n">${mapsN(f.n)}</span></div>`).join('')
+        : '<div class="sagr"><span class="muted">ниже своего нигде</span></div>'}</div></div>`;
+    }
+
+    let gt = '';
+    for (const nick of nicks) {
+      const {rows, own} = info[nick];
+      let t = `<tr><th>${esc(nick)}</th>${maps.map(m => `<th class="num">${esc(m)}</th>`).join('')}<th class="num own">своя</th></tr>`;
+      for (let q = 0; q < 4; q++) {
+        t += `<tr><td>${CATS_FULL[q]}</td>` + maps.map(m => {
+          const r = rows.filter(x => x.map === m), gv = mean(r.map(x => x.g ? x.g[q] : null));
+          if (gv == null || own[q] == null) return '<td class="num muted">—</td>';
+          if (r.length < 2) return `<td class="num muted">${gv.toFixed(1)}</td>`;
+          const dv = Number(gv.toFixed(1)) - Number(own[q].toFixed(1));
+          if (dv <= -SAG.g + 1e-9) return `<td class="num crit"><b>▼ ${gv.toFixed(1)}</b></td>`;
+          if (dv >= SAG.g - 1e-9) return `<td class="num good"><b>▲ ${gv.toFixed(1)}</b></td>`;
+          return `<td class="num">${gv.toFixed(1)}</td>`;
+        }).join('') + `<td class="num own"><b>${fmt(own[q], 1)}</b></td></tr>`;
+      }
+      gt += `<div class="card"><div class="scroll"><table class="gtab">${t}</table></div></div>`;
+    }
+
+    return section('По картам', `
+      <div class="card"><h3>Рейтинг по картам <span class="legend"><span><i class="sw" style="background:${tint(-1)}"></i>ниже своего</span><span><i class="sw" style="background:${tint(0)}"></i>как обычно</span><span><i class="sw" style="background:${tint(1)}"></i>выше своего</span><span><i class="sw" style="border:1px solid var(--ring)"></i>меньше двух карт</span></span></h3>
+        <div class="scroll"><table class="mx">${head}${body}</table></div>
+        <p class="muted small">В клетке рейтинг игрока на карте, под ним K/D, ниже рейтинг отдельно за T и за CT. Цвет показывает, насколько это выше или ниже своего среднего за период. Стороны берутся с праккома, где матча там нет, стоит прочерк.</p></div>
+      <div class="card stack"><h3>Где проседает <span class="muted">первая цифра на карте, вторая своя за период</span></h3>${sag}
+        <p class="muted small">Сюда попадает то, что ниже своего: ADR на ${SAG.adr} и больше, K/D на ${SAG.kd}, любая оценка на ${SAG.g}. Сверху стоит то, где просадка сильнее. Справа сколько карт сыграно.</p></div>
+      <h3 class="subh">Оценки по картам</h3>
+      <p class="lead">▼ значит ниже своей оценки на 0.3 и больше, ▲ выше. «Своя» это средняя по всем картам за период. Серым отмечено, где карт меньше двух.</p>
+      <div class="grid">${gt}</div>`);
+  }
+
+  /* Норма роли. База это средний рейтинг нашей же пятёрки за период: числа топ-50 к нашему
+     уровню не применимы, а РАЗНИЦА между ролями применима. Её и взяли с HLTV. */
+  function teamBase(ms) {
+    const rows = D.roster.flatMap(r => rowsOf(ms, r.nick));
+    return agg(rows).rating;
+  }
+  function normOf(r, base, i) {
+    return r.off && base != null ? base + r.off[i] : null;
+  }
+  function normBlock(r, a, base) {
+    if (!r.off) return '<div class="norm muted">роль не задана</div>';
+    const n = normOf(r, base, 0);
+    if (n == null || a.rating == null) return '<div class="norm muted">данных мало</div>';
+    const d = a.rating - n, cls = d >= 0 ? 'good' : d >= -0.09 ? '' : 'crit';
+    const bar = r.star == null ? '' : `<span class="bar2">планка звезды ${(n + r.star).toFixed(2)}, `
+      + `<b class="${a.rating >= n + r.star ? 'good' : 'crit'}">${a.rating >= n + r.star ? 'тянет' : 'не тянет'}</b></span>`;
+    return `<div class="norm" title="${esc(r.rlabel || '')}. Норма это средний рейтинг пятёрки за период (${fmt(base, 2)}) плюс смещение роли (${r.off[0] >= 0 ? '+' : ''}${r.off[0].toFixed(2)}). Допуск ±0.09, это разброс между игроками топ-30.">`
+      + `норма роли ${n.toFixed(2)} <b class="${cls}">${d >= 0 ? '+' : ''}${d.toFixed(2)}</b>${bar}</div>`;
+  }
+  function sideNorm(r, side, base, i) {
+    if (!r.off || !side) return '';
+    const n = normOf(r, base, i), d = side.rating - n;
+    return `<em class="${d >= 0 ? 'good' : d >= -0.09 ? 'muted' : 'crit'}" title="норма роли на этой стороне">норма ${n.toFixed(2)}, ${d >= 0 ? '+' : ''}${d.toFixed(2)}</em>`;
+  }
+  /* Первые дуэли переносятся с топ-30 без поправки на уровень: доля по построению делится
+     внутри пятёрки, а успешность центрирована около половины внутри закрытого пула. */
+  function duelBlock(r, a, share) {
+    if (!r.duel || !a.duels) return '';
+    const [dlo, dn, dhi] = r.duel, [wlo, wn, whi] = r.win;
+    const sc = share == null ? '' : share < dlo ? 'crit' : share > dhi ? 'warn' : 'good';
+    const wc = a.win < wlo ? 'crit' : a.win > whi ? 'warn' : 'good';
+    return `<div class="duel"><div class="k">Первые дуэли <span class="muted">${a.duels} за период</span></div>`
+      + `<div class="drow"><span>доля команды</span><b class="${sc}">${share == null ? '—' : share.toFixed(0) + '%'}</b><i>норма ${dn}%, коридор ${dlo}–${dhi}</i></div>`
+      + `<div class="drow"><span>выигрывает</span><b class="${wc}">${a.win.toFixed(0)}%</b><i>норма ${wn}%, коридор ${wlo}–${whi}</i></div></div>`;
+  }
+
+  // ══ Матчи за период ══
+  function secMatches() {
+    const ms = pick(cur()).slice().sort((a, b) => a.date < b.date ? 1 : -1);
+    if (!ms.length) return section('Матчи за период', '<div class="card"><p class="empty">Матчей нет.</p></div>');
+    const pist = (m, side) => {
+      const p = m[side + 'p'], x = m[side + '2'];
+      if (p !== true && p !== false) return '—';
+      return (p ? 'взяли' : 'слили') + (x === true ? ', второй взяли' : x === false ? ', второй слили' : '');
+    };
+    const items = ms.map(m => {
+      const w = won(m), cls = w === true ? 'win' : w === false ? 'loss' : 'draw';
+      const head = `<summary><span class="d">${ddmm(m.date)}</span><span class="mp">${esc(m.map || '—')}</span>`
+        + `<span class="vs">${esc(m.enemy || '—')}</span><span class="lv">${esc(lvlOf(m))}</span>`
+        + `<span class="sc ${cls}">${m.us ?? '—'}:${m.them ?? '—'}</span>`
+        + `<span class="tp">${m.tour ? (m.link ? `<a href="${esc(m.link)}" target="_blank" rel="noopener">${esc(m.tour)}</a>` : esc(m.tour)) : 'прак'}</span></summary>`;
+      const rows = m.players.map(p => `<tr><td>${esc(p.p)}</td><td class="num">${fmt(p.r, 2)}</td>`
+        + `<td class="num">${p.k ?? '—'}–${p.a ?? '—'}–${p.d ?? '—'}</td><td class="num">${fmt(p.adr, 0)}</td>`
+        + `<td class="num">${fmt(p.hs, 0)}</td>`
+        + `<td class="num">${p.t ? p.t.rating.toFixed(2) : '—'}</td><td class="num">${p.ct ? p.ct.rating.toFixed(2) : '—'}</td>`
+        + `<td class="num">${p.g && p.g.some(x => x != null) ? p.g.map(x => x == null ? '·' : x).join(' ') : '—'}</td></tr>`).join('');
+      const body = `<div class="mdet"><div class="mmeta">`
+        + `<span><i>раунды</i>T ${m.t ?? '—'} · CT ${m.ct ?? '—'}</span>`
+        + `<span><i>пистолетки</i>CT ${pist(m, 'ct')} · T ${pist(m, 't')}</span>`
+        + (m.drill ? `<span><i>оттачивали</i>${esc(m.drill)}${m.how ? ' · ' + esc(m.how) : ''}</span>` : '')
+        + (m.goal ? `<span><i>вывод</i>${esc(m.goal)}</span>` : '')
+        + `</div>`
+        + (rows ? `<div class="scroll"><table class="mtab"><tr><th>Игрок</th><th class="num">рейтинг</th><th class="num">K–A–D</th><th class="num">ADR</th><th class="num">HS%</th><th class="num">T</th><th class="num">CT</th><th class="num">оценки</th></tr>${rows}</table></div>` : '<p class="empty">Стата по игрокам не занесена.</p>')
+        + `</div>`;
+      return `<details class="match ${cls}">${head}${body}</details>`;
+    }).join('');
+    return section('Матчи за период', `<p class="lead">Каждый матч разворачивается. Оценки идут в порядке мик · мак · ком · кол, точка значит, что оценки нет.</p><div class="card matches">${items}</div>`);
+  }
+
+  // ══ Про игрока ══
+  function secPlayer(nick) {
+    const r_ = cur(), ms = pick(r_), rows = rowsOf(ms, nick);
+    if (!rows.length) return section('Про ' + nick, '<div class="card"><p class="empty">За период у него матчей нет.</p></div>');
+    const withR = rows.filter(x => x.r != null).slice().sort((a, b) => b.r - a.r);
+    const one = x => `<li><span class="d">${ddmm(x.date)}</span><b>${x.r.toFixed(2)}</b> ${esc(x.map)} · ${x.k}–${x.a}–${x.d} · ADR ${Math.round(x.adr)}</li>`;
+    const best = withR.slice(0, 3).map(one).join('');
+    const worst = withR.slice(-3).reverse().map(one).join('');
+    const byM = new Map();
+    for (const x of rows) { if (!x.map) continue; if (!byM.has(x.map)) byM.set(x.map, []); byM.get(x.map).push(x); }
+    const maps = [...byM.entries()].map(([m, r]) => [m, agg(r), r.length])
+      .filter(x => x[1].rating != null).sort((a, b) => b[1].rating - a[1].rating);
+    const tgCell = (nick2, m, side, val) => {
+      const t = tgOf(nick2, m, side);
+      if (!t) return `<td class="num">${fmt(val, 2)}</td>`;
+      const d = val == null ? null : val - t.v;
+      const cls = d == null ? '' : d >= 0 ? 'good' : d >= -0.09 ? '' : 'crit';
+      return `<td class="num ${cls}" title="таргет спота ${t.v.toFixed(2)}${t.found ? '' : ', число выведено'}">`
+        + `${fmt(val, 2)}<sub>${t.v.toFixed(2)}${t.found ? '' : '*'}</sub></td>`;
+    };
+    const mrows = maps.map(([m, a, n]) => `<tr><td>${esc(m)}<small class="pos">${esc(posPair(nick, m) || '')}</small></td>`
+      + `<td class="num"><b>${a.rating.toFixed(2)}</b></td>`
+      + tgCell(nick, m, 'T', a.t && a.t.rating) + tgCell(nick, m, 'CT', a.ct && a.ct.rating)
+      + `<td class="num">${fmt(a.kd, 2)}</td><td class="num">${fmt(a.adr, 0)}</td><td class="num">${mapsN(n)}</td></tr>`).join('');
+    const tr = D.training.filter(x => x.p === nick && x.date >= r_[0] && x.date <= r_[1]);
+    const trList = tr.length
+      ? `<ul class="tl">${tr.map(x => `<li><span class="d">${ddmm(x.date)}</span>${[x.micro && 'микро: ' + esc(x.micro), x.macro && 'макро: ' + esc(x.macro)].filter(Boolean).join(' · ')}</li>`).join('')}</ul>`
+      : '<p class="muted">За период ничего не записано.</p>';
+    const said = [];
+    for (const e of D.journal) {
+      if (!e.date || e.date < r_[0] || e.date > r_[1]) continue;
+      for (const l of e.lines) if (l.toLowerCase().includes(nick.toLowerCase())) said.push(`<li><span class="d">${ddmm(e.date)}</span>${esc(l.replace(/^[-•*]\s*/, ''))}</li>`);
+    }
+    return section('Про ' + nick, `
+      <div class="grid two">
+        <div class="card"><h3>Лучшие карты периода</h3><ul class="tl">${best || '<li class="muted">нет данных</li>'}</ul></div>
+        <div class="card"><h3>Худшие карты периода</h3><ul class="tl">${worst || '<li class="muted">нет данных</li>'}</ul></div>
+      </div>
+      <div class="card"><h3>Карты по рейтингу <span class="muted">мелким под цифрой — таргет спота</span></h3>${mrows ? `<div class="scroll"><table><tr><th>Карта</th><th class="num">рейтинг</th><th class="num">T</th><th class="num">CT</th><th class="num">K/D</th><th class="num">ADR</th><th class="num">карт</th></tr>${mrows}</table></div>
+        <p class="muted small">Таргет спота это сколько на этой позиции выдаёт средний игрок топ-50. Звёздочка значит, что число выведено из соседних спотов, а не найдено. Сравнивать честно только внутри одной карты: уровни между картами собраны разными способами.</p>` : '<p class="empty">Нет данных.</p>'}</div>
+      <div class="grid two">
+        <div class="card"><h3>Инд. тренировка за период</h3>${trList}</div>
+        <div class="card"><h3>Что про него писали <span class="muted">строки из журнала и разборов</span></h3>${said.length ? `<ul class="tl">${said.join('')}</ul>` : '<p class="muted">Ничего не записано.</p>'}</div>
+      </div>`);
+  }
+
+  // ══ Неделя ══
+  function secWeek() {
+    const wk = W[S.week], inW = e => e.date && e.date >= wk.lo && e.date <= wk.hi;
+    const ideas = D.ideas.filter(inW), c = new Map();
+    for (const x of ideas) c.set(x.who, (c.get(x.who) || 0) + 1);
+    const who = D.roster.map(r => r.nick).concat([...c.keys()].filter(n => !D.roster.some(r => r.nick === n)));
+    const fate = ideaCounts(wk);
+    const three = fate
+      ? `<span class="three"><i>внесли <b>${fate.in ?? ideas.length}</b></i><i class="good">взяли на тест <b>${fate.test ?? '—'}</b></i><i class="crit">отклонили <b>${fate.no ?? '—'}</b></i></span>`
+      : `<span class="muted">судьба идей не записана, пришли в чат три числа: внесли, взяли на тест, отклонили</span>`;
+    const dum = `<div class="card dum"><b>Думалка за неделю</b>${three}<span>${who.map(n => `${esc(n)} <b>${c.get(n) || 0}</b>`).join(' · ')}</span><span class="muted">строк в листе ${ideas.length}</span></div>`;
+    const entries = D.journal.filter(e => inW(e) && (e.kind === 'день' || e.kind === 'разбор'));
+    const days = [...new Set(entries.map(e => e.date))].sort().map(d => {
+      const parts = [];
+      for (const e of entries.filter(x => x.date === d && x.kind === 'день')) parts.push(`<ul>${e.lines.map(l => `<li>${esc(l.replace(/^[-•*]\s*/, ''))}</li>`).join('')}</ul>`);
+      for (const e of entries.filter(x => x.date === d && x.kind === 'разбор')) parts.push(`<div class="rev"><b>разбор · ${esc(e.title)}</b>${e.lines.map(noteLine).join('')}</div>`);
+      return `<div class="card day"><div class="dd"><b>${ddmm(d)}</b><span>${wday(d)}</span></div><div>${parts.join('')}</div></div>`;
+    }).join('');
+    return section(`Неделя ${ddmm(wk.lo)} — ${ddmm(wk.hi)}`, `<p class="lead">Эта часть не зависит от фильтров: что делали по дням, со слов IGL.</p>${dum}<div class="grid">${days || '<div class="card"><p class="empty">Дни не записаны.</p></div>'}</div>`);
+  }
+
+  function ideaCounts(wk) {
+    /* Судьбу идей Рома присылает словами в конце недели, в журнал она ложится строкой
+       вида «Думалка: внесли 7, на тест 3, отклонили 4». Цвет строк в листе не читаем. */
+    const num = (txt, re) => { const m = txt.match(re); return m ? Number(m[1]) : null; };
+    for (const e of D.journal) {
+      if (!e.date || e.date < wk.lo || e.date > wk.hi) continue;
+      for (const l of e.lines.concat(e.notes || [])) {
+        if (!/думалк/i.test(l)) continue;
+        const o = {in: num(l, /внес[а-я]*\s+(\d+)/i), test: num(l, /тест[а-я]*\s+(\d+)/i),
+                   no: num(l, /(?:отклон|отказ)[а-я]*\s+(\d+)/i)};
+        if (o.in != null || o.test != null || o.no != null) return o;
+      }
+    }
+    return null;
+  }
+
+  // ══ Итог и план ══
+  function secSummary() {
+    const wk = W[S.week], pw = S.week > 0 ? W[S.week - 1] : null;
+    const inR = (e, w) => w && e.date >= w.lo && e.date <= w.hi;
+    const it = D.journal.filter(e => e.kind === 'итог' && inR(e, wk)).pop();
+    const itp = D.journal.filter(e => e.kind === 'итог' && inR(e, pw)).pop();
+    const plan = D.journal.filter(e => e.kind === 'план' && inR(e, wk));
+    const was = new Map(((itp && itp.scores) || []).map(([k, v]) => [k, v]));
+    const scores = ((it && it.scores) || []).map(([k, v]) => `<div class="score"><div class="k">${esc(k)}</div><div class="big">${v}</div>${delta(v, was.has(k) ? was.get(k) : null, 0)}</div>`).join('');
+    const notes = ((it && it.notes) || []).map(noteLine).join('');
+    const signals = [];
+    const idx = trendIdx();
+    for (const r of D.roster) {
+      const ser = idx.map(i => agg(rowsOf(pick(weekR(i)), r.nick)));
+      const fr = falling(ser.map(x => x.rating), 0.01, idx), fg = falling(ser.map(x => x.gavg), 0.05, idx);
+      if (fr) signals.push(`${esc(r.nick)}: рейтинг четыре недели подряд вниз, ${ddmm(fr.from)}–${ddmm(fr.to)}, ${fr.vals.map(v => v.toFixed(2)).join(' → ')}`);
+      if (fg) signals.push(`${esc(r.nick)}: балл четыре недели подряд вниз, ${fg.vals.map(v => v.toFixed(1)).join(' → ')}`);
+    }
+    const worst = byMap(pick(cur(), false)).map(([m, l]) => { const t = tally(l); return [m, t.w + t.l ? t.w / (t.w + t.l) : null, t.w + t.l]; })
+      .filter(x => x[1] != null && x[2] >= 3).sort((a, b) => a[1] - b[1])[0];
+    if (worst) signals.push(`хуже всего карта ${esc(worst[0])}: ${Math.round(100 * worst[1])}% на ${mapsN(worst[2])}`);
+    const planHtml = plan.length ? `<ul>${plan.flatMap(e => e.lines).map(l => `<li>${esc(l.replace(/^[-•*]\s*/, ''))}</li>`).join('')}</ul>` : '<p class="muted">План не записан. Пришли в чат, что делаем на следующей неделе.</p>';
+    return section('Итог и план', `
+      <div class="grid two">
+        <div class="card"><h3>Итог недели <span class="muted">оценка IGL, 1–5</span></h3>${scores ? `<div class="scores">${scores}</div>` : '<p class="muted">Итог не записан.</p>'}${notes}</div>
+        <div class="card"><h3>План на следующую неделю</h3>${planHtml}</div>
+      </div>
+      <div class="card stack"><h3>Сигналы из цифр <span class="muted">сам отчёт, без решений</span></h3>${signals.length ? `<ul>${signals.map(s => `<li>${s}</li>`).join('')}</ul>` : '<p class="muted">Ничего тревожного.</p>'}</div>`);
+  }
+
+  // ══ управление ══
+  function initControls() {
+    document.getElementById('team').textContent = D.team;
+    document.getElementById('sample').hidden = !D.sample;
+    const lvl = document.getElementById('f-lvl');
+    const seen = new Set(D.matches.map(lvlOf));
+    // лестница показывается целиком: разница между тиром 1 и тиром 3 важнее пустого чипа.
+    // «No» и «OPEN» появляются, только если на них реально играли.
+    const order = D.levels.filter(x => !['No', 'OPEN'].includes(x) || seen.has(x))
+      .concat(seen.has(NOLVL) ? [NOLVL] : []);
+    lvl.innerHTML = '<span class="k">уровень</span><button type="button" data-v="">любой</button>'
+      + order.map(k => `<button type="button" data-v="${esc(k)}"${seen.has(k) ? '' : ' class="none"'}>${esc(k)}</button>`).join('');
+    const fm = document.getElementById('f-map');
+    fm.innerHTML = '<option value="all">все</option>' + [...new Set(D.matches.map(m => m.map).filter(Boolean))].sort().map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+    const fp = document.getElementById('f-player');
+    fp.innerHTML = '<option value="all">все</option>' + D.roster.map(r => `<option value="${esc(r.nick)}">${esc(r.nick)}</option>`).join('');
+    lvl.addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      const v = b.dataset.v;
+      if (!v) S.lvls.clear();
+      else if (S.lvls.has(v)) S.lvls.delete(v);
+      else S.lvls.add(v);
+      render();
+    });
+    fm.onchange = e => { S.map = e.target.value; render(); };
+    fp.onchange = e => { S.player = e.target.value; render(); };
+    document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S[seg.dataset.key] = b.dataset.v; render(); }));
+    document.getElementById('wprev').onclick = () => { if (S.week > 0) { S.week--; render(); } };
+    document.getElementById('wnext').onclick = () => { if (S.week < W.length - 1) { S.week++; render(); } };
+  }
+  function render() {
+    document.querySelectorAll('.seg').forEach(seg => seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(S[seg.dataset.key] === b.dataset.v))));
+    document.querySelectorAll('#f-lvl button').forEach(b => b.setAttribute('aria-pressed',
+      String(b.dataset.v ? S.lvls.has(b.dataset.v) : S.lvls.size === 0)));
+    const wk = W[S.week];
+    document.getElementById('wlabel').textContent = `${ddmm(wk.lo)} — ${ddmm(wk.hi)}`;
+    document.getElementById('wprev').disabled = S.week === 0;
+    document.getElementById('wnext').disabled = S.week === W.length - 1;
+    const tail = secMaps() + secMatches() + secWeek() + secSummary();
+    document.getElementById('app').innerHTML = S.player === 'all'
+      ? secTeam() + secTopics() + secPlayers() + tail
+      : secTeam() + secPlayers() + secPlayer(S.player) + tail;
+  }
+  if (D.empty) {
+    document.getElementById('team').textContent = D.team;
+    document.querySelector('.filters').hidden = true;
+    document.getElementById('app').innerHTML =
+      `<section class="sec"><div class="card"><h3>${esc(D.title || 'Пока пусто')}</h3>`
+      + `<p class="muted">${esc(D.note || '')}</p></div></section>`;
+    return;
+  }
+  initControls();
+  render();
+}
+
+(async () => {
+  const raw = JSON.parse(document.getElementById('data').textContent);
+  if (!raw.locked) { start(raw); return; }
+  const L = raw.locked, KEY = 'team-dashboard-pass';
+  const wrap = document.getElementById('wrap'), gate = document.getElementById('gate');
+  const form = document.getElementById('gate-form'), err = document.getElementById('gate-err');
+  const btn = form.querySelector('button');
+  document.getElementById('gate-team').textContent = L.team || 'Команда';
+  wrap.hidden = true;
+  const bytes = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  async function unlock(pass) {
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey({name: 'PBKDF2', salt: bytes(L.salt), iterations: L.iter, hash: 'SHA-256'},
+      base, {name: 'AES-GCM', length: 256}, false, ['decrypt']);
+    const plain = await crypto.subtle.decrypt({name: 'AES-GCM', iv: bytes(L.iv)}, key, bytes(L.ct));
+    return JSON.parse(new TextDecoder().decode(plain));
+  }
+  function open(D) {
+    gate.hidden = true;
+    wrap.hidden = false;
+    const out = document.getElementById('logout');
+    out.hidden = false;
+    out.onclick = () => { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); };
+    start(D);
+  }
+  let saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  if (saved) {
+    try { open(await unlock(saved)); return; } catch (e) { try { localStorage.removeItem(KEY); } catch (e2) {} }
+  }
+  gate.hidden = false;
+  form.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    err.hidden = true;
+    btn.disabled = true;
+    btn.textContent = 'Проверяю…';
+    const pass = document.getElementById('gate-pass').value;
+    try {
+      const D = await unlock(pass);
+      if (document.getElementById('gate-remember').checked) { try { localStorage.setItem(KEY, pass); } catch (e) {} }
+      open(D);
+    } catch (e) {
+      err.hidden = false;
+      btn.disabled = false;
+      btn.textContent = 'Открыть';
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
